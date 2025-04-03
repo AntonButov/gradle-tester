@@ -8,6 +8,7 @@ import java.io.File
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertContains
 
 class ProjectGenerationBuilderTest {
     @get:Rule
@@ -68,7 +69,6 @@ class ProjectGenerationBuilderTest {
         testProject(projectRoot) {
             addKeyLocalProperties("API_KEY" to "test-api-key")
             addKeyLocalProperties("SDK_DIR" to "/path/to/sdk")
-            isAssertBuild = false
         }
 
         val localPropertiesFile = File(projectRoot, "local.properties")
@@ -92,9 +92,7 @@ class ProjectGenerationBuilderTest {
                 }
                 """.trimIndent(),
             )
-            isAssertBuild = false
         }
-
         val sourceFile = File(projectRoot, "src/main/kotlin/com/example/Test.kt")
         assertTrue(sourceFile.exists())
         assertTrue(sourceFile.readText().contains("class Test"))
@@ -102,22 +100,10 @@ class ProjectGenerationBuilderTest {
 
     @Test
     fun `test adding kotlin source from file`() {
-        val sourceFile = File("SourceFile.kt")
-        sourceFile.writeText(
-            """
-            package com.example
-            
-            class SourceFile {
-                fun sourceMethod() = "From source file"
-            }
-            """.trimIndent(),
-        )
-
+        val sourceFile = File("src/test/kotlin/gradle/tester/SourceFile.kt")
         testProject(projectRoot) {
             additionalSource("com/example/ImportedSource.kt", sourceFile)
-            // isAssertBuild = false
         }
-
         val importedFile = File(projectRoot, "src/main/kotlin/com/example/ImportedSource.kt")
         assertTrue(importedFile.exists())
         assertTrue(importedFile.readText().contains("class SourceFile"))
@@ -128,27 +114,18 @@ class ProjectGenerationBuilderTest {
     fun `test check action`() {
         var checkCalled = false
 
-        val result =
-            testProject(projectRoot) {
-                buildScript(
-                    """
+        testProject(projectRoot) {
+            buildScript(
+                """
                 plugins {
                     kotlin("jvm") version "1.9.24"
                 }
-                
-                tasks.register("testTask") {
-                    doLast {
-                        println("Test task executed")
-                    }
-                }
             """,
-                )
-                gradleTask("testTask")
-                // isAssertBuild = false
-                check {
-                    checkCalled = true
-                }
+            )
+            check {
+                checkCalled = true
             }
+        }
 
         assertTrue(checkCalled)
     }
@@ -160,7 +137,6 @@ class ProjectGenerationBuilderTest {
             additionalSource("com/example/Test2.kt", "package com.example\n\nclass Test2")
             addKeyLocalProperties("key1" to "value1")
             addKeyLocalProperties("key2" to "value2")
-            //  isAssertBuild = false
         }
 
         assertTrue(File(projectRoot, "src/main/kotlin/com/example/Test1.kt").exists())
@@ -180,20 +156,14 @@ class ProjectGenerationBuilderTest {
                 plugins {
                     kotlin("jvm") version "1.9.24"
                 }
-                
-                tasks.register("testTask") {
-                    doLast {
-                        println("Test task executed")
-                    }
-                }
             """,
             )
-            gradleTask("testTask")
-            isAssertBuild = false
             isPrint = false
         }
-
-        assertTrue(File(projectRoot, "build.gradle.kts").exists())
+        val buildGradleFile = File(projectRoot, "build.gradle.kts")
+        assertTrue(buildGradleFile.exists())
+        val content = buildGradleFile.readText()
+        assertContains(content, "plugins")
     }
 
     @Test

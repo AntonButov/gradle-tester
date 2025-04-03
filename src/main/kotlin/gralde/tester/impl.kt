@@ -6,7 +6,7 @@ import java.io.File
 
 class ProjectGenerationBuilder private constructor(private val root: File) {
     private var keysLocalProperties: List<Pair<String, String>> = mutableListOf()
-    private var buildScript: String? = null
+    private var buildScript: String = ""
     private var checkAction: ProjectGenerationBuilder.() -> Unit = {}
     private var arg: String = "build"
     private var additionalSources: MutableList<Pair<String, String>> = mutableListOf()
@@ -79,7 +79,7 @@ class ProjectGenerationBuilder private constructor(private val root: File) {
             if (localPropertiesContent.isNotEmpty()) {
                 write("local.properties", localPropertiesContent)
             }
-            buildScript?.let { write("build.gradle.kts", it) }
+            buildScript.let { write("build.gradle.kts", it) }
             settings?.let { write("settings.gradle.kts", it) }
             additionalSources.forEach {
                 withKotlinSource(it.first, it.second)
