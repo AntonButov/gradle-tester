@@ -14,6 +14,7 @@ dependencies {
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit)
     implementation(gradleTestKit())
+    testImplementation(kotlin("test"))
 }
 tasks.named("build") {
     dependsOn("ktlintFormat")
