@@ -17,7 +17,6 @@ class ProjectGenerationBuilder(private val root: File) {
 
     private var keysLocalProperties: List<Pair<String,String>> = mutableListOf()
     private var buildScript: String? = null
-    private var kotlinSourcePath: String? = null
     private var checkAction: ProjectGenerationBuilder.() -> Unit = {}
     private var arg: String = "build"
     private var additionalSources: MutableList<Pair<String, String>> = mutableListOf()
@@ -36,16 +35,13 @@ class ProjectGenerationBuilder(private val root: File) {
         this.buildScript = script
     }
 
-    fun kotlinSourcePath(path: String) {
-        this.kotlinSourcePath = path
-    }
-
     fun additionalSource(path: String, content: String) {
         additionalSources.add(path to content)
     }
 
-    fun addFile(path: String, content: String) {
-        additionalFiles.add(path to content)
+    fun additionalSource(path: String, file: File) {
+        val content = file.readText()
+        additionalSources.add(path to content)
     }
 
     fun settings(content: String) {
@@ -83,8 +79,9 @@ class ProjectGenerationBuilder(private val root: File) {
             with (runner) {
                 withProjectDir(root)
                 withArguments(arg)
-                keysLocalProperties.map { (key, value) -> "$key=$value" }.forEach {
-                    write("local.properties", it)
+                val localPropertiesContent = keysLocalProperties.joinToString("\n") { (key, value) -> "$key=$value" }
+                if (localPropertiesContent.isNotEmpty()) {
+                    write("local.properties", localPropertiesContent)
                 }
                 buildScript?.let { write("build.gradle.kts", it) }
                 settings?.let { write("settings.gradle.kts", it) }
