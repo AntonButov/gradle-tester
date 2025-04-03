@@ -13,7 +13,7 @@ repositories {
 dependencies {
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit)
-    testImplementation(gradleTestKit())
+    implementation(gradleTestKit())
 }
 tasks.named("build") {
     dependsOn("ktlintFormat")
