@@ -1,20 +1,15 @@
-package gralde.tester
+package gralde.tester.impl
 
-import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import java.io.File
 
 class ProjectGenerationBuilder private constructor(private val root: File) {
     private var keysLocalProperties: List<Pair<String, String>> = mutableListOf()
     private var buildScript: String = ""
-    private var checkAction: ProjectGenerationBuilder.() -> Unit = {}
     private var arg: String = "build"
     private var additionalSources: MutableList<Pair<String, String>> = mutableListOf()
-    private var additionalFiles: MutableList<Pair<String, String>> = mutableListOf()
     private var settings: String? = null
-
     var isAssertBuild = true
-
     var isPrint = true
 
     fun addKeyLocalProperties(key: Pair<String, String>) {
@@ -48,15 +43,11 @@ class ProjectGenerationBuilder private constructor(private val root: File) {
         this.arg = arg
     }
 
-    fun check(action: ProjectGenerationBuilder.() -> Unit) {
-        this.checkAction = action
-    }
-
     private fun withKotlinSource(
         path: String,
         content: String,
     ) {
-        val file = root.resolve("src/main/kotlin/$path")
+        val file = root.resolve(path)
         file.parentFile.mkdirs()
         file.writeText(content)
     }
@@ -70,7 +61,7 @@ class ProjectGenerationBuilder private constructor(private val root: File) {
         file.writeText(content)
     }
 
-    fun generate(): BuildResult {
+    fun generate(): ProjectBuildResult {
         val runner = GradleRunner.create()
         with(runner) {
             withProjectDir(root)
@@ -93,9 +84,8 @@ class ProjectGenerationBuilder private constructor(private val root: File) {
         if (isPrint) {
             println(result.output)
         }
-        checkAction(this)
 
-        return result
+        return ProjectBuildResult(root, result)
     }
 
     companion object {
