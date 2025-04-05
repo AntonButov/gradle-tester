@@ -17,7 +17,7 @@ class ProjectBuildResult(
      *
      * @param block The configuration block for file assertion
      */
-    fun assertFile(block: FileAssertionBuilder.() -> Unit) {
+    infix fun assertFile(block: FileAssertionBuilder.() -> Unit) {
         val builder = FileAssertionBuilder().apply(block)
 
         // Validate required fields

@@ -27,10 +27,9 @@ class ProjectGenerationBuilderTest {
 
     @Test
     fun `test basic project generation`() {
-        val result =
-            testProject(projectRoot) {
-                buildScript(
-                    """
+        testProject(projectRoot) {
+            buildScript(
+                """
                 plugins {
                     kotlin("jvm") version "1.9.24"
                 }
@@ -44,30 +43,29 @@ class ProjectGenerationBuilderTest {
                 }
                 
             """,
-                )
-                settings("rootProject.name = \"test-project\"")
+            )
+            settings("rootProject.name = \"test-project\"")
+        }.apply {
+            assertFile {
+                path("build.gradle.kts")
             }
 
-        result.assertFile {
-            path("build.gradle.kts")
-        }
-
-        result.assertFile {
-            path("settings.gradle.kts")
+            assertFile {
+                path("settings.gradle.kts")
+            }
         }
     }
 
     @Test
     fun `test adding local properties`() {
-        val result =
-            testProject(projectRoot) {
-                addKeyLocalProperties("API_KEY" to "test-api-key")
-                addKeyLocalProperties("SDK_DIR" to "/path/to/sdk")
+        testProject(projectRoot) {
+            addKeyLocalProperties("API_KEY" to "test-api-key")
+            addKeyLocalProperties("SDK_DIR" to "/path/to/sdk")
+        }.apply {
+            assertFile {
+                path("local.properties")
+                contentExactly("API_KEY=test-api-key\nSDK_DIR=/path/to/sdk")
             }
-
-        result.assertFile {
-            path("local.properties")
-            content("API_KEY=test-api-key\nSDK_DIR=/path/to/sdk")
         }
     }
 
